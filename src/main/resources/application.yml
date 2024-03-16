@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: weather-station
+  data:
+    mongodb:
+      host: ${MONGO_HOST}
+      port: ${MONGO_PORT}
+      database: measurement
+      username: ${MONGO_USERNAME}
+      password: ${MONGO_PASSWORD}
+      authentication-database: admin 
+server:
+  port : 9075
