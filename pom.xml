@@ -105,10 +105,12 @@
 							<artifactId>lombok</artifactId>
 						</exclude>
 					</excludes>
+					<image>
+						<name>qjetuska/${project.artifactId}:0.0.1</name>
+					</image>
 				</configuration>
 			</plugin>
 		</plugins>
 	</build>
-
 
 </project>
