@@ -57,13 +57,14 @@ public class WeatherRESTTest {
 
 	@Test
 	void getAllEmpty() throws Exception {
-		mockMvc.perform(get("/weather")).andExpect(status().isOk())
+		mockMvc.perform(get("/weather").param("stationId", "s1"))
+				.andExpect(status().isOk())
 				.andExpect(jsonPath("$", Matchers.hasSize(0)));
 	}
 
 	@Test
-	void getAllWithWronParameters() throws Exception {
-		mockMvc.perform(get("/weather").param("stationId", "s1"))
+	void getAllWithWrongParameters() throws Exception {
+		mockMvc.perform(get("/weather").param("start", "2000-01-01T10:00:00"))
 				.andExpect(status().is4xxClientError());
 	}
 
@@ -159,7 +160,8 @@ public class WeatherRESTTest {
 	}
 
 	private void checkResultForFindAll(int index) throws Exception {
-		mockMvc.perform(get("/weather")).andExpect(status().isOk())
+		mockMvc.perform(get("/weather").param("pageSize", "50")
+				.param("stationId", "s1")).andExpect(status().isOk())
 				.andExpect(jsonPath("$", Matchers.hasSize(index + 1)))
 				.andExpect(jsonPath("$[" + index + "].humidity",
 						Matchers.is(60 + index)))
