@@ -62,7 +62,7 @@ public class WeatherDataController {
 						.getMessage("measurementInserted"));
 	}
 
-	@Operation(summary = "Generate excel file with data for specified station and time range. Maximum page size is 5000.")
+	@Operation(summary = "Generate excel file with data for specified station and time range. 5000 is maximum count or returned values.")
 	@ApiResponses({
 			@ApiResponse(responseCode = "200", description = "Data succesfully generated.") })
 	@GetMapping("excel")
@@ -82,7 +82,7 @@ public class WeatherDataController {
 				.create(data);
 	}
 
-	@Operation(summary = "Returns data for specified station and time range.", description = "If no parameter is set all data are returned. If stationId, start and end is defined, data are filtered.")
+	@Operation(summary = "Returns data for specified station and time range.", description = "Allowed combination: (stationId without start and end) or (all parameters: stationId, start and end)")
 	@ApiResponses({
 			@ApiResponse(responseCode = "200", description = "Data succesfully returned.") })
 	@GetMapping
@@ -113,7 +113,7 @@ public class WeatherDataController {
 				i18nUtil.getMessage("findAllCheck"));
 	}
 
-	@Operation(summary = "Returns predicated data based on last 20 values. SimpleRegression from apache library is used.", description = "If no parameter is set all data are returned. If stationId, start and end is defined, data are filtered.")
+	@Operation(summary = "Returns predicated data based on last values. SimpleRegression from apache library is used.", description = "If no parameter is set all data are returned. If stationId, start and end is defined, data are filtered.")
 	@ApiResponses({
 			@ApiResponse(responseCode = "200", description = "Data succesfully returned.") })
 	@GetMapping("prediction")

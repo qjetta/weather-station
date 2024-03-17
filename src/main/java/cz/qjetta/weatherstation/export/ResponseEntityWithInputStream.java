@@ -34,7 +34,7 @@ public class ResponseEntityWithInputStream {
 				.createInputStream();
 		HttpHeaders headers = new HttpHeaders();
 		headers.add(HttpHeaders.CONTENT_DISPOSITION,
-				"attachment; filename=." + fileName
+				"attachment; filename=." + fileName + "."
 						+ dataExporter.getExtentsion());
 
 		// Return Excel file as ResponseEntity
