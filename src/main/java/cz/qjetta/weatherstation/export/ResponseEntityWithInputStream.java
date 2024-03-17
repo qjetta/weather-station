@@ -12,8 +12,8 @@ import cz.qjetta.weatherstation.dto.WeatherDataDto;
 import lombok.RequiredArgsConstructor;
 
 /**
- * It can created {@link ResponseEntity} with {@link InputStreamResource} for
- * passed {@link IDataExporter}. The file name would be fileName.
+ * It can create {@link ResponseEntity} with {@link InputStreamResource} for
+ * passed {@link IDataExporter}. The file name will be fileName.
  */
 @RequiredArgsConstructor
 public class ResponseEntityWithInputStream {
@@ -27,13 +27,15 @@ public class ResponseEntityWithInputStream {
 	 *         {@link IDataExporter}
 	 * @throws IOException
 	 */
-	public ResponseEntity<InputStreamResource> create(List<WeatherDataDto> data)
-			throws IOException {
+	public ResponseEntity<InputStreamResource> create(
+			List<WeatherDataDto> data) throws IOException {
 
-		InputStream inputStream = dataExporter.createInputStream();
+		InputStream inputStream = dataExporter
+				.createInputStream();
 		HttpHeaders headers = new HttpHeaders();
-		headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=."
-				+ fileName + dataExporter.getExtentsion());
+		headers.add(HttpHeaders.CONTENT_DISPOSITION,
+				"attachment; filename=." + fileName
+						+ dataExporter.getExtentsion());
 
 		// Return Excel file as ResponseEntity
 		return ResponseEntity.ok().headers(headers)

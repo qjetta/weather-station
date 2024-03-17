@@ -6,7 +6,9 @@ import java.util.List;
 
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,6 +22,7 @@ import cz.qjetta.weatherstation.exception.BadRequestException;
 import cz.qjetta.weatherstation.export.ExcelWeatherDataExporter;
 import cz.qjetta.weatherstation.export.IDataExporter;
 import cz.qjetta.weatherstation.export.ResponseEntityWithInputStream;
+import cz.qjetta.weatherstation.locale.I18nUtil;
 import cz.qjetta.weatherstation.model.TimestampAndTemperature;
 import cz.qjetta.weatherstation.service.PredictionService;
 import cz.qjetta.weatherstation.service.WeatherDataService;
@@ -36,6 +39,7 @@ import lombok.RequiredArgsConstructor;
 @Tag(name = "Weather stations API", description = "Collecting and retrieving weather data from stations. Data are saved in MongoDB.")
 @RequiredArgsConstructor
 public class WeatherDataController {
+	private final I18nUtil i18nUtil;
 
 	private static final String XLS_FILE_NAME_WEATHER_DATA = "weather_data";
 
@@ -49,8 +53,13 @@ public class WeatherDataController {
 	public ResponseEntity<String> insert(
 			@Valid @RequestBody WeatherDataDto weatherData) {
 		weatherDataService.insertWeatherData(weatherData);
+		HttpHeaders headers = new HttpHeaders();
+
+		headers.setContentType(
+				MediaType.APPLICATION_JSON_UTF8);
 		return ResponseEntity.status(HttpStatus.CREATED)
-				.body("Weather data inserted successfully.");
+				.headers(headers).body(i18nUtil
+						.getMessage("measurementInserted"));
 	}
 
 	@Operation(summary = "Generate excel file with data for specified station and time range. Maximum page size is 5000.")
@@ -101,7 +110,7 @@ public class WeatherDataController {
 			return ResponseEntity.ok().body(data);
 		}
 		throw new BadRequestException(
-				"(stationId without start and end) must be set or (stationId, start and end) must be set.");
+				i18nUtil.getMessage("findAllCheck"));
 	}
 
 	@Operation(summary = "Returns predicated data based on last 20 values. SimpleRegression from apache library is used.", description = "If no parameter is set all data are returned. If stationId, start and end is defined, data are filtered.")

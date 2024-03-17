@@ -9,4 +9,9 @@ spring:
       username: ${MONGO_USERNAME}
       password: ${MONGO_PASSWORD}
       authentication-database: admin 
-
+  messages:
+    basename: messages
+    always-use-message-format: false
+    encoding: UTF-8
+    fallback-to-system-locale: true
+    use-code-as-default-message: false

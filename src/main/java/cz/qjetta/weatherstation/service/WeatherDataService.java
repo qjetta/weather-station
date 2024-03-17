@@ -42,9 +42,6 @@ public class WeatherDataService {
 
 	public List<WeatherDataDto> getAllWeatherData(int page,
 			int pageSize, String stationId) {
-//		return weatherDataRepository.findAll().stream()
-//				.map(wd -> dtoMapper.convertToInsertDto(wd)).toList();
-
 		Pageable pageable = createPageable(page, pageSize);
 		Page<WeatherData> pagedData = weatherDataRepository
 				.findByMetadata_StationId(stationId,

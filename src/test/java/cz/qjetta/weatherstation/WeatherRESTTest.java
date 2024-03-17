@@ -39,7 +39,8 @@ public class WeatherRESTTest {
 	@Container
 	@ServiceConnection
 	static MongoDBContainer mongoDBContainer = new MongoDBContainer(
-			DockerImageName.parse("mongo:5.0.26-rc0-focal"));
+			DockerImageName
+					.parse("mongo:5.0.26-rc0-focal"));
 
 	@Autowired
 	private MockMvc mockMvc;
@@ -57,26 +58,62 @@ public class WeatherRESTTest {
 
 	@Test
 	void getAllEmpty() throws Exception {
-		mockMvc.perform(get("/weather").param("stationId", "s1"))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$", Matchers.hasSize(0)));
+		mockMvc.perform(
+				get("/weather").param("stationId", "s1"))
+				.andExpect(status().isOk()).andExpect(
+						jsonPath("$", Matchers.hasSize(0)));
+	}
+
+	@Test
+	void testInsertMessageDefault() throws Exception {
+
+		WeatherDataDto dto = WeatherTestHelper.createRec(0);
+		String requestBody = objectMapper
+				.writeValueAsString(dto);
+
+		mockMvc.perform(post("/weather")
+				.contentType(MediaType.APPLICATION_JSON)
+
+				.content(requestBody))
+				.andExpectAll(status().isCreated())
+				.andExpect(content().string(
+						"Measurement inserted successfully."));
+	}
+
+	@Test
+	void testInsertMessageCs() throws Exception {
+		WeatherDataDto dto = WeatherTestHelper.createRec(0);
+		String requestBody = objectMapper
+				.writeValueAsString(dto);
+
+		mockMvc.perform(post("/weather")
+				.header("Accept-Language", "cs")
+				.contentType(MediaType.APPLICATION_JSON)
+
+				.content(requestBody))
+				.andExpectAll(status().isCreated())
+				.andExpect(content()
+						.string("Měření úspěšně uloženo."));
 	}
 
 	@Test
 	void getAllWithWrongParameters() throws Exception {
-		mockMvc.perform(get("/weather").param("start", "2000-01-01T10:00:00"))
+		mockMvc.perform(get("/weather").param("start",
+				"2000-01-01T10:00:00"))
 				.andExpect(status().is4xxClientError());
 	}
 
 	@Test
 	void trainingDataEmty() throws Exception {
-		mockMvc.perform(get("/weather/prediction").param("stationId", "s1"))
+		mockMvc.perform(get("/weather/prediction")
+				.param("stationId", "s1"))
 				.andExpect(status().is4xxClientError());
 	}
 
 	@Test
 	void insertNonValidData() throws Exception {
-		WeatherDataDto invalidData = WeatherTestHelper.createRec(0);
+		WeatherDataDto invalidData = WeatherTestHelper
+				.createRec(0);
 		invalidData.setTemp(200);
 		insertInvalidData(invalidData);
 	}
@@ -88,56 +125,69 @@ public class WeatherRESTTest {
 		insert20Entries4StationS1();
 
 		// filter 4
-		mockMvc.perform(get("/weather").param("stationId", "s1")
+		mockMvc.perform(get("/weather")
+				.param("stationId", "s1")
 				.param("start", "2000-01-01T10:00:00")
 				.param("end", "2000-01-05T10:00:00"))
-				.andExpectAll(status().isOk())
-				.andExpect(jsonPath("$", Matchers.hasSize(4)));
+				.andExpectAll(status().isOk()).andExpect(
+						jsonPath("$", Matchers.hasSize(4)));
 
 		// filter 0
-		mockMvc.perform(get("/weather").param("stationId", "s2")
+		mockMvc.perform(get("/weather")
+				.param("stationId", "s2")
 				.param("start", "2000-01-01T10:00:00")
 				.param("end", "2000-01-05T10:00:00"))
-				.andExpectAll(status().isOk())
-				.andExpect(jsonPath("$", Matchers.hasSize(0)));
+				.andExpectAll(status().isOk()).andExpect(
+						jsonPath("$", Matchers.hasSize(0)));
 
 		// filter 0
-		mockMvc.perform(get("/weather").param("stationId", "s1")
+		mockMvc.perform(get("/weather")
+				.param("stationId", "s1")
 				.param("start", "2001-01-01T10:00:00")
 				.param("end", "2002-01-05T10:00:00"))
-				.andExpectAll(status().isOk())
-				.andExpect(jsonPath("$", Matchers.hasSize(0)));
+				.andExpectAll(status().isOk()).andExpect(
+						jsonPath("$", Matchers.hasSize(0)));
 
 		// predict 10
-		mockMvc.perform(get("/weather/prediction").param("stationId", "s1"))
+		mockMvc.perform(get("/weather/prediction")
+				.param("stationId", "s1"))
 				.andExpectAll(status().isOk())
-				.andExpect(jsonPath("$", Matchers.hasSize(10)));
+				.andExpect(jsonPath("$",
+						Matchers.hasSize(10)));
 
 		// predict 30 (with last measurements)
-		mockMvc.perform(get("/weather/prediction").param("stationId", "s1")
+		mockMvc.perform(get("/weather/prediction")
+				.param("stationId", "s1")
 				.param("showLastMeasurements", "true"))
 				.andExpectAll(status().isOk())
-				.andExpect(jsonPath("$", Matchers.hasSize(30)));
+				.andExpect(jsonPath("$",
+						Matchers.hasSize(30)));
 
 		// predict 1
-		mockMvc.perform(get("/weather/prediction").param("stationId", "s1")
+		mockMvc.perform(get("/weather/prediction")
+				.param("stationId", "s1")
 				.param("predictionsCount", "1")
-				.param("intervalInSeconds", "30")).andExpectAll(status().isOk())
-				.andExpect(jsonPath("$", Matchers.hasSize(1)));
+				.param("intervalInSeconds", "30"))
+				.andExpectAll(status().isOk()).andExpect(
+						jsonPath("$", Matchers.hasSize(1)));
 
 		// predict 1, training 5
-		mockMvc.perform(get("/weather/prediction").param("stationId", "s1")
-				.param("predictionsCount", "1").param("trainingCount", "5")
+		mockMvc.perform(get("/weather/prediction")
+				.param("stationId", "s1")
+				.param("predictionsCount", "1")
+				.param("trainingCount", "5")
 				.param("intervalInSeconds", "30")
 				.param("showLastMeasurements", "true"))
-				.andExpectAll(status().isOk())
-				.andExpect(jsonPath("$", Matchers.hasSize(6)));
+				.andExpectAll(status().isOk()).andExpect(
+						jsonPath("$", Matchers.hasSize(6)));
 
 		// generate excel file: 4
-		mockMvc.perform(get("/weather/excel").param("stationId", "s1")
+		mockMvc.perform(get("/weather/excel")
+				.param("stationId", "s1")
 				.param("start", "2000-01-01T10:00:00")
 				.param("end", "2000-01-05T10:00:00"))
-				.andExpectAll(status().isOk()).andExpect(content().contentType(
+				.andExpectAll(status().isOk())
+				.andExpect(content().contentType(
 						"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
 
 	}
@@ -159,35 +209,47 @@ public class WeatherRESTTest {
 		checkResultForFindAll(index);
 	}
 
-	private void checkResultForFindAll(int index) throws Exception {
-		mockMvc.perform(get("/weather").param("pageSize", "50")
-				.param("stationId", "s1")).andExpect(status().isOk())
-				.andExpect(jsonPath("$", Matchers.hasSize(index + 1)))
-				.andExpect(jsonPath("$[" + index + "].humidity",
+	private void checkResultForFindAll(int index)
+			throws Exception {
+		mockMvc.perform(
+				get("/weather").param("pageSize", "50")
+						.param("stationId", "s1"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$",
+						Matchers.hasSize(index + 1)))
+				.andExpect(jsonPath(
+						"$[" + index + "].humidity",
 						Matchers.is(60 + index)))
-				.andExpect(jsonPath("$[" + index + "].metadata.stationId",
+				.andExpect(jsonPath(
+						"$[" + index
+								+ "].metadata.stationId",
 						Matchers.is("s1")));
 	}
 
 	private void insertWeatherData(int index)
 			throws JsonProcessingException, Exception {
-		WeatherDataDto rec1 = WeatherTestHelper.createRec(index);
+		WeatherDataDto rec1 = WeatherTestHelper
+				.createRec(index);
 		insertWeatherData(rec1);
 	}
 
 	private void insertWeatherData(WeatherDataDto rec1)
 			throws JsonProcessingException, Exception {
-		String requestBody = objectMapper.writeValueAsString(rec1);
-		mockMvc.perform(post("/weather").contentType(MediaType.APPLICATION_JSON)
-				.content(requestBody)).andExpectAll(status().isCreated());
+		String requestBody = objectMapper
+				.writeValueAsString(rec1);
+		mockMvc.perform(post("/weather")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(requestBody))
+				.andExpectAll(status().isCreated());
 	}
 
 	private void insertInvalidData(WeatherDataDto rec1)
 			throws JsonProcessingException, Exception {
-		String requestBody = objectMapper.writeValueAsString(rec1);
-		mockMvc.perform(post("/weather").contentType(MediaType.APPLICATION_JSON)
+		String requestBody = objectMapper
+				.writeValueAsString(rec1);
+		mockMvc.perform(post("/weather")
+				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 				.andExpectAll(status().is4xxClientError());
 	}
-
 }
