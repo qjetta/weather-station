@@ -27,9 +27,11 @@ db.createCollection(
 {
   timeseries: {
   timeField: "timestamp",
-  metaField: "id"
+  metaField: "stationId"
 }})
 ```
+
+
 express-ui (weather/weatherpwd)
 [dev profile](http://localhost:9072/db/measurement/)
 [prod profile](http://localhost:9077/db/measurement/)
