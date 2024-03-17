@@ -39,8 +39,7 @@ public class WeatherRESTTest {
 	@Container
 	@ServiceConnection
 	static MongoDBContainer mongoDBContainer = new MongoDBContainer(
-			DockerImageName
-					.parse("mongo:5.0.26-rc0-focal"));
+			DockerImageName.parse("mongo:7.0-jammy"));
 
 	@Autowired
 	private MockMvc mockMvc;
@@ -78,6 +77,27 @@ public class WeatherRESTTest {
 				.andExpectAll(status().isCreated())
 				.andExpect(content().string(
 						"Measurement inserted successfully."));
+	}
+
+	@Test
+	void testInsertDuplicatedMeasurement()
+			throws Exception {
+		WeatherDataDto dto = WeatherTestHelper.createRec(0);
+		String requestBody = objectMapper
+				.writeValueAsString(dto);
+
+		mockMvc.perform(post("/weather")
+				.contentType(MediaType.APPLICATION_JSON)
+
+				.content(requestBody))
+				.andExpectAll(status().isCreated())
+				.andExpect(content().string(
+						"Measurement inserted successfully."));
+
+		mockMvc.perform(post("/weather")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(requestBody))
+				.andExpectAll(status().is4xxClientError());
 	}
 
 	@Test

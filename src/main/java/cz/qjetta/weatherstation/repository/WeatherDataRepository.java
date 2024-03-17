@@ -22,4 +22,7 @@ public interface WeatherDataRepository
 	Page<WeatherData> findByMetadata_StationId(
 			String stationId, Pageable pageable);
 
+	boolean existsByMetadata_StationIdAndTimestamp(
+			String stationId, LocalDateTime timestamp);
+
 }

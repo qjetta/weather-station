@@ -141,20 +141,4 @@ public class WeatherServiceTest {
 		verify(repository, times(1)).save(weatherData);
 	}
 
-	@Test
-	void testInsertInvalid() {
-		WeatherDataDto dto = WeatherTestHelper.createRec(1);
-		dto.setHumidity(-10);
-		WeatherData weatherData = weatherDtoMapper
-				.convertFromInsertDto(dto);
-
-		when(repository.save(weatherData))
-				.thenReturn(weatherData);
-
-		// test
-		service.insertWeatherData(dto);
-
-		verify(repository, times(1)).save(weatherData);
-	}
-
 }

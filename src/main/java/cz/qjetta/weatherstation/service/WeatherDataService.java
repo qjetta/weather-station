@@ -12,6 +12,7 @@ import org.springframework.validation.annotation.Validated;
 
 import cz.qjetta.weatherstation.dto.WeatherDataDto;
 import cz.qjetta.weatherstation.dto.WeatherDtoMapper;
+import cz.qjetta.weatherstation.exception.BadRequestException;
 import cz.qjetta.weatherstation.model.WeatherData;
 import cz.qjetta.weatherstation.repository.WeatherDataRepository;
 import jakarta.validation.Valid;
@@ -27,6 +28,18 @@ public class WeatherDataService {
 
 	public void insertWeatherData(
 			@Valid WeatherDataDto weatherData) {
+
+		// mongoDB does not support unique indexes for timeseries yet
+		boolean entryAlreadyExists = weatherDataRepository
+				.existsByMetadata_StationIdAndTimestamp(
+						weatherData.getMetadata()
+								.getStationId(),
+						weatherData.getTimestamp());
+		if (entryAlreadyExists) {
+			throw new BadRequestException(
+					"Entry for stationId and timestamp already exist.");
+		}
+
 		weatherDataRepository.save(dtoMapper
 				.convertFromInsertDto(weatherData));
 	}
