@@ -8,7 +8,7 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 
-import cz.qjetta.weatherstation.model.WeatherData;
+import cz.qjetta.weatherstation.dto.WeatherDataDto;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -27,7 +27,7 @@ public class ResponseEntityWithInputStream {
 	 *         {@link IDataExporter}
 	 * @throws IOException
 	 */
-	public ResponseEntity<InputStreamResource> create(List<WeatherData> data)
+	public ResponseEntity<InputStreamResource> create(List<WeatherDataDto> data)
 			throws IOException {
 
 		InputStream inputStream = dataExporter.createInputStream();

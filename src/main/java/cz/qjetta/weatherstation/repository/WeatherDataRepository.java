@@ -6,13 +6,14 @@ import java.util.List;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
+import cz.qjetta.weatherstation.dto.WeatherDataDto;
 import cz.qjetta.weatherstation.model.WeatherData;
 
 @Repository
 public interface WeatherDataRepository
 		extends MongoRepository<WeatherData, String> {
 
-	List<WeatherData> findByMetadata_StationIdAndTimestampBetween(
+	List<WeatherDataDto> findByMetadata_StationIdAndTimestampBetweenOrderByTimestamp(
 			String stationId, LocalDateTime start, LocalDateTime end);
 
 }

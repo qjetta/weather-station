@@ -7,11 +7,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.stream.IntStream;
 
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -28,8 +27,8 @@ import org.testcontainers.utility.DockerImageName;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import cz.qjetta.weatherstation.model.Metadata;
-import cz.qjetta.weatherstation.model.WeatherData;
+import cz.qjetta.weatherstation.dto.WeatherDataDto;
+import cz.qjetta.weatherstation.repository.WeatherDataRepository;
 
 @SpringBootTest
 @Testcontainers
@@ -48,12 +47,41 @@ public class WeatherRESTTest {
 	@Autowired
 	private ObjectMapper objectMapper;
 
+	@Autowired
+	private WeatherDataRepository repository;
+
+	@BeforeEach
+	public void beforeEach() {
+		repository.deleteAll();
+	}
+
+	@Test
+	void getAllEmpty() throws Exception {
+		mockMvc.perform(get("/weather")).andExpect(status().isOk())
+				.andExpect(jsonPath("$", Matchers.hasSize(0)));
+	}
+
+	@Test
+	void getAllWithWronParameters() throws Exception {
+		mockMvc.perform(get("/weather").param("stationId", "s1"))
+				.andExpect(status().is4xxClientError());
+	}
+
+	@Test
+	void trainingDataEmty() throws Exception {
+		mockMvc.perform(get("/weather/prediction").param("stationId", "s1"))
+				.andExpect(status().is4xxClientError());
+	}
+
+	@Test
+	void insertNonValidData() throws Exception {
+		WeatherDataDto invalidData = WeatherTestHelper.createRec(0);
+		invalidData.setTemp(200);
+		insertInvalidData(invalidData);
+	}
+
 	@Test
 	void insertAndFilterAndPredict() throws Exception {
-
-		// check findAll
-		mockMvc.perform(get("/weather")).andExpectAll(status().isOk(),
-				content().json(objectMapper.writeValueAsString(List.of())));
 
 		// insert 20 entries
 		insert20Entries4StationS1();
@@ -103,6 +131,14 @@ public class WeatherRESTTest {
 				.param("showLastMeasurements", "true"))
 				.andExpectAll(status().isOk())
 				.andExpect(jsonPath("$", Matchers.hasSize(6)));
+
+		// generate excel file: 4
+		mockMvc.perform(get("/weather/excel").param("stationId", "s1")
+				.param("start", "2000-01-01T10:00:00")
+				.param("end", "2000-01-05T10:00:00"))
+				.andExpectAll(status().isOk()).andExpect(content().contentType(
+						"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+
 	}
 
 	private void insert20Entries4StationS1() {
@@ -133,18 +169,23 @@ public class WeatherRESTTest {
 
 	private void insertWeatherData(int index)
 			throws JsonProcessingException, Exception {
-		WeatherData rec1 = createRec(index);
+		WeatherDataDto rec1 = WeatherTestHelper.createRec(index);
+		insertWeatherData(rec1);
+	}
+
+	private void insertWeatherData(WeatherDataDto rec1)
+			throws JsonProcessingException, Exception {
 		String requestBody = objectMapper.writeValueAsString(rec1);
 		mockMvc.perform(post("/weather").contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody)).andExpectAll(status().isCreated());
 	}
 
-	private WeatherData createRec(int index) {
-		return WeatherData.builder()
-				.metadata(Metadata.builder().stationId("s1").build())
-				.humidity(60 + index).temp(0 + index)
-				.precipitation(0 + 0.1 * index).wind(index % 5)
-				.timestamp(LocalDateTime.of(2000, 1, 1, 0, 0).plusDays(index))
-				.build();
+	private void insertInvalidData(WeatherDataDto rec1)
+			throws JsonProcessingException, Exception {
+		String requestBody = objectMapper.writeValueAsString(rec1);
+		mockMvc.perform(post("/weather").contentType(MediaType.APPLICATION_JSON)
+				.content(requestBody))
+				.andExpectAll(status().is4xxClientError());
 	}
+
 }

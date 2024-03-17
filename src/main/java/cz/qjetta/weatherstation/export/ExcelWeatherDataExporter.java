@@ -13,13 +13,13 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.http.MediaType;
 
-import cz.qjetta.weatherstation.model.WeatherData;
+import cz.qjetta.weatherstation.dto.WeatherDataDto;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class ExcelWeatherDataExporter implements IDataExporter {
 
-	private final List<WeatherData> data;
+	private final List<WeatherDataDto> data;
 
 	@Override
 	public InputStream createInputStream() throws IOException {
@@ -45,9 +45,9 @@ public class ExcelWeatherDataExporter implements IDataExporter {
 		return inputStream;
 	}
 
-	private void createDataRows(List<WeatherData> data, Sheet sheet) {
+	private void createDataRows(List<WeatherDataDto> data, Sheet sheet) {
 		int rowNum = 1;
-		for (WeatherData weather : data) {
+		for (WeatherDataDto weather : data) {
 			Row row = sheet.createRow(rowNum++);
 			row.createCell(0).setCellValue(weather.getTimestamp().toString());
 			row.createCell(1).setCellValue(weather.getTemp());

@@ -14,24 +14,24 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import cz.qjetta.weatherstation.dto.WeatherDataDto;
 import cz.qjetta.weatherstation.exception.BadRequestException;
 import cz.qjetta.weatherstation.export.ExcelWeatherDataExporter;
 import cz.qjetta.weatherstation.export.IDataExporter;
 import cz.qjetta.weatherstation.export.ResponseEntityWithInputStream;
 import cz.qjetta.weatherstation.model.TimestampAndTemperature;
-import cz.qjetta.weatherstation.model.WeatherData;
 import cz.qjetta.weatherstation.service.PredictionService;
 import cz.qjetta.weatherstation.service.WeatherDataService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/weather")
 @Tag(name = "Weather stations API", description = "Collecting and retrieving weather data from stations. Data are saved in MongoDB.")
-
 @RequiredArgsConstructor
 public class WeatherDataController {
 
@@ -44,7 +44,8 @@ public class WeatherDataController {
 	@ApiResponses({
 			@ApiResponse(responseCode = "201", description = "Weather data inserted successfully.") })
 	@PostMapping
-	public ResponseEntity<String> insert(@RequestBody WeatherData weatherData) {
+	public ResponseEntity<String> insert(
+			@Valid @RequestBody WeatherDataDto weatherData) {
 		weatherDataService.insertWeatherData(weatherData);
 		return ResponseEntity.status(HttpStatus.CREATED)
 				.body("Weather data inserted successfully.");
@@ -58,7 +59,7 @@ public class WeatherDataController {
 			@RequestParam String stationId, @RequestParam LocalDateTime start,
 			@RequestParam LocalDateTime end) throws IOException {
 
-		List<WeatherData> data = weatherDataService
+		List<WeatherDataDto> data = weatherDataService
 				.findByMetadataStationIdAndTimestampBetween(stationId, start,
 						end);
 		IDataExporter dataExporter = new ExcelWeatherDataExporter(data);
@@ -70,17 +71,18 @@ public class WeatherDataController {
 	@ApiResponses({
 			@ApiResponse(responseCode = "200", description = "Data succesfully returned.") })
 	@GetMapping
-	public ResponseEntity<List<WeatherData>> findAll(
+	public ResponseEntity<List<WeatherDataDto>> findAll(
 			@RequestParam(required = false) String stationId,
 			@RequestParam(required = false) LocalDateTime start,
 			@RequestParam(required = false) LocalDateTime end)
 			throws IOException {
 
 		if (stationId == null && start == null && end == null) {
-			List<WeatherData> allData = weatherDataService.getAllWeatherData();
+			List<WeatherDataDto> allData = weatherDataService
+					.getAllWeatherData();
 			return ResponseEntity.ok().body(allData);
 		} else if (stationId != null && start != null && end != null) {
-			List<WeatherData> data = weatherDataService
+			List<WeatherDataDto> data = weatherDataService
 					.findByMetadataStationIdAndTimestampBetween(stationId,
 							start, end);
 

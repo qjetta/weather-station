@@ -10,16 +10,4 @@ public class NoDataForPredictionFound extends RuntimeException {
 	public NoDataForPredictionFound() {
 		super();
 	}
-
-	public NoDataForPredictionFound(String message, Throwable cause) {
-		super(message, cause);
-	}
-
-	public NoDataForPredictionFound(String message) {
-		super(message);
-	}
-
-	public NoDataForPredictionFound(Throwable cause) {
-		super(cause);
-	}
 }
